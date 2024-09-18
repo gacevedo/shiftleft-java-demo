@@ -292,11 +292,47 @@ public String debug(@RequestParam String customerId,
 
     // empty for now, because we debug
     Set<Account> accounts1 = new HashSet<Account>();
-    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-    Date dateOfBirthParsed = null;
+    //dateofbirth example -> "1982-01-10"
     try {
-        dateOfBirthParsed = formatter.parse(dateOfBirth);
-    } catch (ParseException e) {
+        Customer customer1 = new Customer(customerId, clientId, 
+                                          StringEscapeUtils.escapeHtml4(firstName),
+                                          StringEscapeUtils.escapeHtml4(lastName), 
+                                          DateTime.parse(dateOfBirth).toDate(),
+                                          ESAPI.encoder().encodeForHTML(ssn), 
+                                          ESAPI.encoder().encodeForHTML(socialSecurityNum), 
+                                          ESAPI.encoder().encodeForHTML(tin), 
+                                          ESAPI.encoder().encodeForHTML(phoneNumber), 
+                                          new Address(StringEscapeUtils.escapeHtml4("Debug str"),
+                                                      "", 
+                                                      StringEscapeUtils.escapeHtml4("Debug city"), 
+                                                      "CA", 
+                                                      ESAPI.encoder().encodeForHTML("12345")),
+                                          accounts1);
+
+        try {
+            customerRepository.save(customer1);
+        } catch (DataAccessException e) {
+            // Handle the exception appropriately
+            // For example, log it and return an error message
+            // logger.error("Error saving customer", e);
+            // return "Error saving customer";
+        }
+
+        httpResponse.setStatus(HttpStatus.CREATED.value());
+        String locationHeader = String.format("%s/customers/%s",
+                                               request.getContextPath(), 
+                                               ESAPI.encoder().encodeForHTML(customer1.getId()));
+        httpResponse.setHeader("Location", locationHeader);
+
+        return customer1.toString().toLowerCase();
+    } catch (DateTimeParseException e) {
+        // Handle the exception appropriately
+        // For example, log it and return an error message
+        // logger.error("Invalid date format", e);
+        // return "Invalid date format";
+    }
+}
+
         // Handle the exception according to your needs
     }
     String safeFirstName = StringEscapeUtils.escapeHtml4(firstName);
@@ -403,5 +439,6 @@ public String debug(@RequestParam String customerId,
 	}
 
 }
+
 
 
