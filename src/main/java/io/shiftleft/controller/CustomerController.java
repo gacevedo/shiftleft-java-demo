@@ -277,23 +277,27 @@ public class CustomerController {
    * @return String
    * @throws IOException
    */
-  @RequestMapping(value = "/debug", method = RequestMethod.GET)
-  public String debug(@RequestParam String customerId,
-					  @RequestParam int clientId,
-					  @RequestParam String firstName,
-                      @RequestParam String lastName,
-                      @RequestParam String dateOfBirth,
-                      @RequestParam String ssn,
-					  @RequestParam String socialSecurityNum,
-                      @RequestParam String tin,
-                      @RequestParam String phoneNumber,
-                      HttpServletResponse httpResponse,
-                     WebRequest request) throws IOException{
+@RequestMapping(value = "/debug", method = RequestMethod.GET)
+public String debug(@RequestParam String customerId,
+                    @RequestParam int clientId,
+                    @RequestParam String firstName,
+                    @RequestParam String lastName,
+                    @RequestParam String dateOfBirth,
+                    @RequestParam String ssn,
+                    @RequestParam String socialSecurityNum,
+                    @RequestParam String tin,
+                    @RequestParam String phoneNumber,
+                    HttpServletResponse httpResponse,
+                    WebRequest request) throws IOException {
 
     // empty for now, because we debug
     Set<Account> accounts1 = new HashSet<Account>();
     //dateofbirth example -> "1982-01-10"
-    Customer customer1 = new Customer(customerId, clientId, firstName, lastName, DateTime.parse(dateOfBirth).toDate(),
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    LocalDate localDate = LocalDate.parse(dateOfBirth, formatter);
+    Date dateOfBirthDate = java.sql.Date.valueOf(localDate);
+    
+    Customer customer1 = new Customer(customerId, clientId, firstName, lastName, dateOfBirthDate,
                                       ssn, socialSecurityNum, tin, phoneNumber, new Address("Debug str",
                                       "", "Debug city", "CA", "12345"),
                                       accounts1);
@@ -304,7 +308,8 @@ public class CustomerController {
                            request.getContextPath(), customer1.getId()));
 
     return customer1.toString().toLowerCase().replace("script","");
-  }
+}
+
 
 	/**
 	 * Debug test for saving and reading a customer
@@ -388,3 +393,4 @@ public class CustomerController {
 	}
 
 }
+
