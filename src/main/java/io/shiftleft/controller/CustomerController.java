@@ -292,13 +292,22 @@ public String debug(@RequestParam String customerId,
 
     // empty for now, because we debug
     Set<Account> accounts1 = new HashSet<Account>();
-    //dateofbirth example -> "1982-01-10"
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    LocalDate localDate = LocalDate.parse(dateOfBirth, formatter);
-    Date dateOfBirthDate = java.sql.Date.valueOf(localDate);
-    
-    Customer customer1 = new Customer(customerId, clientId, firstName, lastName, dateOfBirthDate,
-                                      ssn, socialSecurityNum, tin, phoneNumber, new Address("Debug str",
+    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+    Date dateOfBirthParsed = null;
+    try {
+        dateOfBirthParsed = formatter.parse(dateOfBirth);
+    } catch (ParseException e) {
+        // Handle the exception according to your needs
+    }
+    String safeFirstName = StringEscapeUtils.escapeHtml4(firstName);
+    String safeLastName = StringEscapeUtils.escapeHtml4(lastName);
+    String safeSsn = StringEscapeUtils.escapeHtml4(ssn);
+    String safeSocialSecurityNum = StringEscapeUtils.escapeHtml4(socialSecurityNum);
+    String safeTin = StringEscapeUtils.escapeHtml4(tin);
+    String safePhoneNumber = StringEscapeUtils.escapeHtml4(phoneNumber);
+
+    Customer customer1 = new Customer(customerId, clientId, safeFirstName, safeLastName, dateOfBirthParsed,
+                                      safeSsn, safeSocialSecurityNum, safeTin, safePhoneNumber, new Address("Debug str",
                                       "", "Debug city", "CA", "12345"),
                                       accounts1);
 
@@ -309,6 +318,7 @@ public String debug(@RequestParam String customerId,
 
     return customer1.toString().toLowerCase().replace("script","");
 }
+
 
 
 	/**
@@ -393,4 +403,5 @@ public String debug(@RequestParam String customerId,
 	}
 
 }
+
 
