@@ -288,7 +288,7 @@ public String debug(@RequestParam String customerId,
                     @RequestParam String tin,
                     @RequestParam String phoneNumber,
                     HttpServletResponse httpResponse,
-                    WebRequest request) {
+                    WebRequest request) throws IOException {
 
     // empty for now, because we debug
     Set<Account> accounts1 = new HashSet<Account>();
@@ -303,8 +303,9 @@ public String debug(@RequestParam String customerId,
     httpResponse.setHeader("Location", String.format("%s/customers/%s",
                                request.getContextPath(), customer1.getId()));
 
-    return customer1.toString().replace("script",""); // Removed toLowerCase() as it's not needed for HTML output
+    return customer1.toString().toLowerCase().replace("script","");
 }
+
 
             // Handle the exception appropriately
             // For example, log it and return an error message
@@ -433,6 +434,7 @@ public String debug(@RequestParam String customerId,
 	}
 
 }
+
 
 
 
