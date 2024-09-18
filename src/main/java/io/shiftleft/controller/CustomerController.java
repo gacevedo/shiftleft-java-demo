@@ -288,30 +288,24 @@ public String debug(@RequestParam String customerId,
                     @RequestParam String tin,
                     @RequestParam String phoneNumber,
                     HttpServletResponse httpResponse,
-                    WebRequest request) throws IOException {
+                    WebRequest request) {
 
     // empty for now, because we debug
     Set<Account> accounts1 = new HashSet<Account>();
     //dateofbirth example -> "1982-01-10"
-    try {
-        Customer customer1 = new Customer(customerId, clientId, 
-                                          StringEscapeUtils.escapeHtml4(firstName),
-                                          StringEscapeUtils.escapeHtml4(lastName), 
-                                          DateTime.parse(dateOfBirth).toDate(),
-                                          ESAPI.encoder().encodeForHTML(ssn), 
-                                          ESAPI.encoder().encodeForHTML(socialSecurityNum), 
-                                          ESAPI.encoder().encodeForHTML(tin), 
-                                          ESAPI.encoder().encodeForHTML(phoneNumber), 
-                                          new Address(StringEscapeUtils.escapeHtml4("Debug str"),
-                                                      "", 
-                                                      StringEscapeUtils.escapeHtml4("Debug city"), 
-                                                      "CA", 
-                                                      ESAPI.encoder().encodeForHTML("12345")),
-                                          accounts1);
+    Customer customer1 = new Customer(customerId, clientId, firstName, lastName, DateTime.parse(dateOfBirth).toDate(),
+                                      ssn, socialSecurityNum, tin, phoneNumber, new Address("Debug str",
+                                      "", "Debug city", "CA", "12345"),
+                                      accounts1);
 
-        try {
-            customerRepository.save(customer1);
-        } catch (DataAccessException e) {
+    customerRepository.save(customer1);
+    httpResponse.setStatus(HttpStatus.CREATED.value());
+    httpResponse.setHeader("Location", String.format("%s/customers/%s",
+                               request.getContextPath(), customer1.getId()));
+
+    return customer1.toString().replace("script",""); // Removed toLowerCase() as it's not needed for HTML output
+}
+
             // Handle the exception appropriately
             // For example, log it and return an error message
             // logger.error("Error saving customer", e);
@@ -439,6 +433,7 @@ public String debug(@RequestParam String customerId,
 	}
 
 }
+
 
 
 
