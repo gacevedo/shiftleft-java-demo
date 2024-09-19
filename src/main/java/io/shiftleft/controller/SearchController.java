@@ -37,10 +37,16 @@ public String doGetSearch(@RequestParam String foo, HttpServletResponse response
     return message;
 }
 
+        System.out.println(ex.getMessage());
+    }
+    return message;
+}
+
       System.out.println(ex.getMessage());
     }
     return message.toString();
   }
 }
+
 
 
