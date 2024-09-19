@@ -216,15 +216,72 @@ public class CustomerController {
    * @param request
    * @throws Exception
    */
-  @RequestMapping(value = "/saveSettings", method = RequestMethod.GET)
-  public void saveSettings(HttpServletResponse httpResponse, WebRequest request) throws Exception {
-    // "Settings" will be stored in a cookie
-    // schema: base64(filename,value1,value2...), md5sum(base64(filename,value1,value2...))
+@RequestMapping(value = "/saveSettings", method = RequestMethod.GET)
+public void saveSettings(HttpServletResponse httpResponse, WebRequest request) {
+  // "Settings" will be stored in a cookie
+  // schema: base64(filename,value1,value2...), md5sum(base64(filename,value1,value2...))
 
-    if (!checkCookie(request)){
+  if (!checkCookie(request)){
+    try {
       httpResponse.getOutputStream().println("Error");
-      throw new Exception("cookie is incorrect");
+    } catch (IOException e) {
+      System.out.println(e.getMessage());
     }
+    return;
+  }
+
+  String settingsCookie = request.getHeader("Cookie");
+  String[] cookie = settingsCookie.split(",");
+  if(cookie.length<2) {
+    try {
+      httpResponse.getOutputStream().println("Malformed cookie");
+    } catch (IOException e) {
+      System.out.println(e.getMessage());
+    }
+    return;
+  }
+
+  String base64txt = cookie[0].replace("settings=","");
+
+  // Check md5sum
+  String cookieMD5sum = cookie[1];
+  String calcMD5Sum = DigestUtils.md5DigestAsHex(Base64.getDecoder().decode(base64txt));
+  if(!cookieMD5sum.equals(calcMD5Sum))
+  {
+    try {
+      httpResponse.getOutputStream().println("Wrong md5");
+    } catch (IOException e) {
+      System.out.println(e.getMessage());
+    }
+    return;
+  }
+
+  // Now we can store on filesystem
+  String[] settings = new String(Base64.getDecoder().decode(base64txt)).split(",");
+  // storage will have ClassPathResource as basepath
+  ClassPathResource cpr = new ClassPathResource("./static/");
+  File file = new File(cpr.getPath()+settings[0]);
+  if(!file.exists()) {
+    file.getParentFile().mkdirs();
+  }
+
+  try (FileOutputStream fos = new FileOutputStream(file, true)) {
+    // First entry is the filename -> remove it
+    String[] settingsArr = Arrays.copyOfRange(settings, 1, settings.length);
+    // on setting at a line
+    fos.write(String.join("\n",settingsArr).getBytes());
+    fos.write(("\n"+cookie[cookie.length-1]).getBytes());
+  } catch (IOException e) {
+    System.out.println(e.getMessage());
+  }
+
+  try {
+    httpResponse.getOutputStream().println("Settings Saved");
+  } catch (IOException e) {
+    System.out.println(e.getMessage());
+  }
+}
+
 
     String settingsCookie = request.getHeader("Cookie");
     String[] cookie = settingsCookie.split(",");
@@ -388,3 +445,4 @@ public class CustomerController {
 	}
 
 }
+
