@@ -18,14 +18,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class SearchController {
 
 @RequestMapping(value = "/search/user", method = RequestMethod.GET)
-public String doGetSearch(@RequestParam(required = false) String foo, HttpServletResponse response, HttpServletRequest request) {
-    Object message = null;
+public String doGetSearch(@RequestParam String foo, HttpServletResponse response, HttpServletRequest request) {
+    String message = "";
     try {
-        if (foo != null && !foo.isEmpty()) {
-            ExpressionParser parser = new SpelExpressionParser();
-            Expression exp = parser.parseExpression(foo);
-            message = exp.getValue();
-        }
+        ExpressionParser parser = new SpelExpressionParser();
+        Expression exp = parser.parseExpression(foo);
+        message = exp.getValue().toString();
+    } catch (Exception ex) {
+        System.out.println(ex.getMessage());
+    }
+    // Sanitize the output to prevent XSS
+    return Encode.forHtml(message);
+}
+
     } catch (Exception ex) {
         System.out.println(ex.getMessage());
     }
@@ -37,4 +42,5 @@ public String doGetSearch(@RequestParam(required = false) String foo, HttpServle
     return message.toString();
   }
 }
+
 
