@@ -362,17 +362,17 @@ public String debug(@RequestParam String customerId,
                     @RequestParam String lastName,
                     @RequestParam String dateOfBirth,
                     @RequestParam String ssn,
-                    @RequestParam(required = false) String socialSecurityNum, // Corrected parameter name
+                    @RequestParam String socialInsurancenum, // Corrected from socialSecurityNum
                     @RequestParam String tin,
                     @RequestParam String phoneNumber,
                     HttpServletResponse httpResponse,
-                    WebRequest request) throws IOException{
+                    WebRequest request) throws IOException {
 
     // empty for now, because we debug
     Set<Account> accounts1 = new HashSet<Account>();
     //dateofbirth example -> "1982-01-10"
-    Customer customer1 = new Customer(customerId, clientId, firstName, lastName, DateTime.parse(dateOfBirth).toDate(),
-                                      ssn, socialSecurityNum, tin, phoneNumber, new Address("Debug str",
+    Customer customer1 = new Customer(customerId, clientId, firstName, lastName, Date.valueOf(dateOfBirth),
+                                      ssn, socialInsurancenum, tin, phoneNumber, new Address("Debug str",
                                       "", "Debug city", "CA", "12345"),
                                       accounts1);
 
@@ -381,8 +381,9 @@ public String debug(@RequestParam String customerId,
     httpResponse.setHeader("Location", String.format("%s/customers/%s",
                                request.getContextPath(), customer1.getId()));
 
-    return customer1.toString().toLowerCase().replace("script",""); // Sanitized output
+    return Encode.forHtml(customer1.toString()); // Sanitized the output to prevent XSS
 }
+
 
 
 	/**
@@ -467,6 +468,7 @@ public String debug(@RequestParam String customerId,
 	}
 
 }
+
 
 
 
