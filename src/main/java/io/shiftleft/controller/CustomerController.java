@@ -354,34 +354,40 @@ public void saveSettings(HttpServletResponse httpResponse, WebRequest request) t
    * @throws IOException
    */
 @RequestMapping(value = "/debug", method = RequestMethod.GET)
-public String debug(@RequestParam(required = false) String customerId,
+public String debug(@RequestParam String customerId,
                     @RequestParam int clientId,
-                    @RequestParam(required = false) String firstName,
-                    @RequestParam(required = false) String lastName,
-                    @RequestParam(required = false) String dateOfBirth,
-                    @RequestParam(required = false) String ssn,
-                    @RequestParam(required = false) String socialSecurityNum,
-                    @RequestParam(required = false) String tin,
-                    @RequestParam(required = false) String phoneNumber,
+                    @RequestParam String firstName,
+                    @RequestParam String lastName,
+                    @RequestParam String dateOfBirth,
+                    @RequestParam String ssn,
+                    @RequestParam String socialSecurityNum,
+                    @RequestParam String tin,
+                    @RequestParam String phoneNumber,
                     HttpServletResponse httpResponse,
                     WebRequest request) throws IOException {
 
     // empty for now, because we debug
     Set<Account> accounts1 = new HashSet<Account>();
     //dateofbirth example -> "1982-01-10"
-    Customer customer1 = null;
-    try {
-        customer1 = new Customer(customerId, clientId, firstName, lastName, DateTime.parse(dateOfBirth).toDate(),
-                                 ssn, socialSecurityNum, tin, phoneNumber, new Address("Debug str",
-                                 "", "Debug city", "CA", "12345"),
-                                 accounts1);
+    Customer customer1 = new Customer(customerId, clientId, firstName, lastName, DateTime.parse(dateOfBirth).toDate(),
+                                      ssn, socialSecurityNum, tin, phoneNumber, new Address("Debug str",
+                                      "", "Debug city", "CA", "12345"),
+                                      accounts1);
 
-        customerRepository.save(customer1);
-        httpResponse.setStatus(HttpStatus.CREATED.value());
-        httpResponse.setHeader("Location", String.format("%s/customers/%s",
-                                 request.getContextPath(), customer1.getId()));
+    customerRepository.save(customer1);
+    httpResponse.setStatus(HttpStatus.CREATED.value());
+    httpResponse.setHeader("Location", String.format("%s/customers/%s",
+                           request.getContextPath(), customer1.getId()));
 
-    } catch (DateTimeParseException e) {
+    return sanitize(customer1.toString().toLowerCase());
+}
+
+private String sanitize(String input) {
+    // Implement a method to sanitize the input to prevent XSS
+    // This could involve replacing special characters with their HTML entities
+    return input.replace("<", "&lt;").replace(">", "&gt;");
+}
+
         // Handle date parsing error
         httpResponse.sendError(HttpStatus.BAD_REQUEST.value(), "Invalid date format");
     } catch (DataAccessException e) {
@@ -479,6 +485,7 @@ public String debug(@RequestParam(required = false) String customerId,
 	}
 
 }
+
 
 
 
