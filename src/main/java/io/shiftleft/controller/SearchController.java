@@ -18,13 +18,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class SearchController {
 
 @RequestMapping(value = "/search/user", method = RequestMethod.GET)
-public String doGetSearch(@RequestParam String foo, HttpServletResponse response, HttpServletRequest request) {
-    Object message = null;
+public String doGetSearch(@RequestParam(required = false, defaultValue = "") String foo, HttpServletResponse response, HttpServletRequest request) {
+    String message = null;
     try {
-        SpelExpressionParser parser = new SpelExpressionParser();
+        ExpressionParser parser = new SpelExpressionParser();
         Expression exp = parser.parseExpression(foo);
-        message = exp.getValue();
+        message = exp.getValue(String.class);
     } catch (Exception ex) {
+        // Log the exception message without exposing sensitive information
+        System.out.println(ex.getMessage());
+    }
+    // Use OWASP Encoder to escape HTML content
+    return message != null ? Encoder.encodeForHTML(message) : "";
+}
+
         // Handle specific exceptions like SpelEvaluationException or EvaluationException
         System.out.println(ex.getMessage());
     }
@@ -37,4 +44,5 @@ public String doGetSearch(@RequestParam String foo, HttpServletResponse response
     return message.toString();
   }
 }
+
 
