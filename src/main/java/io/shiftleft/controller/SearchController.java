@@ -17,16 +17,25 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class SearchController {
 
-  @RequestMapping(value = "/search/user", method = RequestMethod.GET)
-  public String doGetSearch(@RequestParam String foo, HttpServletResponse response, HttpServletRequest request) {
-    java.lang.Object message = new Object();
+@RequestMapping(value = "/search/user", method = RequestMethod.GET)
+@PreAuthorize("hasRole('ROLE_USER')")
+public String doGetSearch(@RequestParam(value = "foo", required = false) String foo, HttpServletResponse response, HttpServletRequest request) {
+    Object message = null;
     try {
-      ExpressionParser parser = new SpelExpressionParser();
-      Expression exp = parser.parseExpression(foo);
-      message = (Object) exp.getValue();
+        if (foo != null) {
+            ExpressionParser parser = new SpelExpressionParser();
+            Expression exp = parser.parseExpression(foo);
+            message = exp.getValue();
+        }
     } catch (Exception ex) {
+        logger.error(ex.getMessage());
+    }
+    return message != null ? message.toString() : null;
+}
+
       System.out.println(ex.getMessage());
     }
     return message.toString();
   }
 }
+
