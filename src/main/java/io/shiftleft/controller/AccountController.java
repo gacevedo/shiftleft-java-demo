@@ -38,7 +38,12 @@ public class AccountController {
         return account;
     }
 
-    @GetMapping("/account/{accountId}")
+	@GetMapping("/account/{accountId}")
+	public Account getAccount(@PathVariable long accountId) {
+	    log.info("Account Data is {}", this.accountRepository.findOne(1l).toString());
+	    return this.accountRepository.findOne(accountId);
+	}
+
     public Account getAccount(@PathVariable long accountId) {
         log.info("Account Data is {}", this.accountRepository.findOne(1l).toString());
         return this.accountRepository.findOne(accountId);
@@ -88,4 +93,5 @@ public class AccountController {
     }
 
 }
+
 
