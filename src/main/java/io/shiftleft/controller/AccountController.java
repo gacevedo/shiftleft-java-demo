@@ -74,7 +74,28 @@ public class AccountController {
         return account;
     }
 
-    @PostMapping("/account/{accountId}/withdraw")
+	@PostMapping("/account/{accountId}/withdraw")
+    public Account withdrawFromAccount(@RequestParam double amount, @PathVariable long accountId) {
+        // Check if the user has the necessary permissions to access the account.
+        if (!hasPermissionToAccessAccount(accountId)) {
+            throw new AccessDeniedException("User does not have permission to access this account.");
+        }
+        
+        Account account = this.accountRepository.findOne(accountId);
+        account.withdraw(amount);
+        this.accountRepository.save(account);
+        log.info("Account Data is {}", account.toString());
+        return account;
+    }
+
+    private boolean hasPermissionToAccessAccount(long accountId) {
+        // Implement your logic to check if the user has permission to access the account.
+        // This could involve checking the user's role, their session, etc.
+        // For example:
+        // return userService.getCurrentUser().getAccountIds().contains(accountId);
+        return false; // Placeholder
+    }
+
     public Account withdrawFromAccount(@RequestParam double amount, @PathVariable long accountId) {
         Account account = this.accountRepository.findOne(accountId);
         account.withdraw(amount);
@@ -112,6 +133,7 @@ public class AccountController {
     }
 
 }
+
 
 
 
