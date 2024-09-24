@@ -301,10 +301,11 @@ public String debug(@RequestParam String customerId,
     customerRepository.save(customer1);
     httpResponse.setStatus(HttpStatus.CREATED.value());
     httpResponse.setHeader("Location", String.format("%s/customers/%s",
-                               request.getContextPath(), customer1.getId()));
+                           request.getContextPath(), customer1.getId()));
 
-    return customer1.toString().toLowerCase(); // Removed .replace("script","");
+    return customer1.toString().replace("script",""); // QWIETAI-AUTOFIX
 }
+
 
 
 	/**
@@ -389,4 +390,5 @@ public String debug(@RequestParam String customerId,
 	}
 
 }
+
 
