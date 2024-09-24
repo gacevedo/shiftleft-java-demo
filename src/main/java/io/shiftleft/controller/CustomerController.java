@@ -278,34 +278,35 @@ public void saveSettings(HttpServletResponse httpResponse, WebRequest request) t
    * @return String
    * @throws IOException
    */
-  @RequestMapping(value = "/debug", method = RequestMethod.GET)
-  public String debug(@RequestParam String customerId,
-					  @RequestParam int clientId,
-					  @RequestParam String firstName,
-                      @RequestParam String lastName,
-                      @RequestParam String dateOfBirth,
-                      @RequestParam String ssn,
-					  @RequestParam String socialSecurityNum,
-                      @RequestParam String tin,
-                      @RequestParam String phoneNumber,
-                      HttpServletResponse httpResponse,
-                     WebRequest request) throws IOException{
+@RequestMapping(value = "/debug", method = RequestMethod.GET)
+public String debug(@RequestParam String customerId,
+                    @RequestParam int clientId,
+                    @RequestParam String firstName,
+                    @RequestParam String lastName,
+                    @RequestParam String dateOfBirth,
+                    @RequestParam String ssn,
+                    @RequestParam String socialSecurityNum,
+                    @RequestParam String tin,
+                    @RequestParam String phoneNumber,
+                    HttpServletResponse httpResponse,
+                    WebRequest request) throws IOException {
 
     // empty for now, because we debug
     Set<Account> accounts1 = new HashSet<Account>();
     //dateofbirth example -> "1982-01-10"
-    Customer customer1 = new Customer(customerId, clientId, firstName, lastName, DateTime.parse(dateOfBirth).toDate(),
-                                      ssn, socialSecurityNum, tin, phoneNumber, new Address("Debug str",
+    Customer customer1 = new Customer(customerId, clientId, StringEscapeUtils.escapeHtml4(firstName), StringEscapeUtils.escapeHtml4(lastName), DateTime.parse(dateOfBirth).toDate(),
+                                      StringEscapeUtils.escapeHtml4(ssn), StringEscapeUtils.escapeHtml4(socialSecurityNum), StringEscapeUtils.escapeHtml4(tin), StringEscapeUtils.escapeHtml4(phoneNumber), new Address("Debug str",
                                       "", "Debug city", "CA", "12345"),
                                       accounts1);
 
     customerRepository.save(customer1);
     httpResponse.setStatus(HttpStatus.CREATED.value());
     httpResponse.setHeader("Location", String.format("%s/customers/%s",
-                           request.getContextPath(), customer1.getId()));
+                               request.getContextPath(), customer1.getId()));
 
-    return customer1.toString().toLowerCase().replace("script","");
-  }
+    return customer1.toString().toLowerCase();
+}
+
 
 	/**
 	 * Debug test for saving and reading a customer
@@ -389,4 +390,5 @@ public void saveSettings(HttpServletResponse httpResponse, WebRequest request) t
 	}
 
 }
+
 
