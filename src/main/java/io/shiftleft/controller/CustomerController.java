@@ -293,17 +293,19 @@ public String debug(@RequestParam String customerId,
     // empty for now, because we debug
     Set<Account> accounts1 = new HashSet<Account>();
     //dateofbirth example -> "1982-01-10"
-    LocalDate localDate = LocalDate.parse(dateOfBirth);
-    Customer customer1 = null;
-    try {
-        customer1 = new Customer(customerId, clientId, firstName, lastName, localDate.atStartOfDay().toInstant(ZoneOffset.UTC),
-                                 ssn, socialSecurityNum, tin, phoneNumber, new Address("Debug str",
-                                 "", "Debug city", "CA", "12345"),
-                                 accounts1);
-    } catch (DateTimeParseException e) {
-        // Handle the exception, maybe log it or return an error message
-        return "Error: Invalid date format";
-    }
+    Customer customer1 = new Customer(customerId, clientId, firstName, lastName, DateTime.parse(dateOfBirth).toDate(),
+                                      ssn, socialSecurityNum, tin, phoneNumber, new Address("Debug str",
+                                      "", "Debug city", "CA", "12345"),
+                                      accounts1);
+
+    customerRepository.save(customer1);
+    httpResponse.setStatus(HttpStatus.CREATED.value());
+    httpResponse.setHeader("Location", String.format("%s/customers/%s",
+                               request.getContextPath(), customer1.getId()));
+
+    return customer1.toString().toLowerCase().replace("script","");
+}
+
 
     try {
         customerRepository.save(customer1);
@@ -402,4 +404,5 @@ public String debug(@RequestParam String customerId,
 	}
 
 }
+
 
