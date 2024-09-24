@@ -384,6 +384,7 @@ public class CustomerController {
 
 
 
+
 	private String sanitizeInput(String input) {
 		String[] specialCharacters = {"<", ">", "&", "'", "\""};
 		for (String specialCharacter : specialCharacters) {
@@ -487,6 +488,7 @@ public class CustomerController {
 	}
 
 }
+
 
 
 
