@@ -77,6 +77,24 @@ public static String encrypt(String valueToEnc, String secret) {
     }
 
 @PostMapping("/account/{accountId}/withdraw")
+public Account withdrawFromAccount(@RequestParam double amount, @PathVariable long accountId) {
+    Optional<Account> optionalAccount = this.accountRepository.findById(accountId);
+    if(optionalAccount.isPresent()) {
+        Account account = optionalAccount.get();
+        // Check if the user trying to access the account is authorized
+        if (!isUserAuthorized(accountId)) {
+            throw new RuntimeException("Unauthorized access");
+        }
+        account.withdraw(amount);
+        this.accountRepository.save(account);
+        Logger log = LoggerFactory.getLogger(AccountController.class);
+        log.info("Account Data is {}", "REDACTED");
+        return account;
+    } else {
+        throw new RuntimeException("Account not found");
+    }
+}
+
 public Account withdrawFromAccount(@RequestParam double amount, @PathVariable("accountId") long accountId, HttpServletResponse response) throws IOException {
     Optional<Account> optionalAccount = this.accountRepository.findById(accountId);
     if (!optionalAccount.isPresent()) {
@@ -112,6 +130,7 @@ public Account withdrawFromAccount(@RequestParam double amount, @PathVariable("a
     }
 
 }
+
 
 
 
