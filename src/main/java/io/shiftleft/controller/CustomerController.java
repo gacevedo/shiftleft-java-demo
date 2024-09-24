@@ -217,91 +217,70 @@ public class CustomerController {
    * @throws Exception
    */
 @RequestMapping(value = "/saveSettings", method = RequestMethod.GET)
-public void saveSettings(HttpServletResponse httpResponse, WebRequest request) throws IOException {
+public void saveSettings(HttpServletResponse httpResponse, WebRequest request) {
     // "Settings" will be stored in a cookie
     // schema: base64(filename,value1,value2...), md5sum(base64(filename,value1,value2...))
 
-    if (!checkCookie(request)){
-        httpResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Error");
-        throw new IllegalArgumentException("cookie is incorrect");
+    if (!checkCookie(request)) {
+        try {
+            httpResponse.getOutputStream().println("Error");
+            throw new Exception("cookie is incorrect");
+        } catch (Exception ex) {
+            // Log the exception or handle it as per application requirement
+        }
     }
 
-    String settingsCookie = request.getParameter("settings");
-    if(settingsCookie == null || !settingsCookie.contains(",")) {
-        httpResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Malformed cookie");
-        throw new IllegalArgumentException("cookie is incorrect");
+    String settingsCookie = request.getHeader("Cookie");
+    String[] cookie = settingsCookie.split(",");
+    if (cookie.length < 2) {
+        try {
+            httpResponse.getOutputStream().println("Malformed cookie");
+            throw new Exception("cookie is incorrect");
+        } catch (Exception ex) {
+            // Log the exception or handle it as per application requirement
+        }
     }
 
-    String base64txt = StringUtils.substringAfter(settingsCookie, "settings=");
-    if(base64txt == null) {
-        throw new IllegalArgumentException("base64txt is null");
-    }
+    String base64txt = cookie[0].replace("settings=", "");
 
     // Check md5sum
-    String cookieMD5sum = StringUtils.substringBefore(settingsCookie, ",");
+    String cookieMD5sum = cookie[1];
     String calcMD5Sum = DigestUtils.md5Hex(base64txt);
-    if(!MessageDigest.isEqual(cookieMD5sum.getBytes(), calcMD5Sum.getBytes())){
-        httpResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Wrong md5");
-        throw new IllegalArgumentException("Invalid MD5");
+    if (!cookieMD5sum.equals(calcMD5Sum)) {
+        try {
+            httpResponse.getOutputStream().println("Wrong md5");
+            throw new Exception("Invalid MD5");
+        } catch (Exception ex) {
+            // Log the exception or handle it as per application requirement
+        }
     }
 
     // Now we can store on filesystem
     String[] settings = new String(Base64.getDecoder().decode(base64txt)).split(",");
     // storage will have ClassPathResource as basepath
     ClassPathResource cpr = new ClassPathResource("./static/");
-    Path file = Paths.get(cpr.getPath(), settings[0]);
-    Files.createDirectories(file.getParent());
+    File file = new File(cpr.getPath() + settings[0]);
+    if (!file.exists()) {
+        file.getParentFile().mkdirs();
+    }
 
-    String[] settingsArr = Arrays.copyOfRange(settings, 1, settings.length);
-    // on setting at a line
-    Files.write(file, String.join("\n",settingsArr).getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-    Files.write(file, (("\n"+settingsCookie.substring(settingsCookie.lastIndexOf(",") + 1)).getBytes()), StandardOpenOption.APPEND);
-    httpResponse.setStatus(HttpServletResponse.SC_OK);
+    try (FileOutputStream fos = new FileOutputStream(file, true)) {
+        // First entry is the filename -> remove it
+        String[] settingsArr = java.util.Arrays.copyOfRange(settings, 1, settings.length);
+        // on setting at a line
+        fos.write(String.join("\n", settingsArr).getBytes());
+        fos.write((("\n" + cookie[cookie.length - 1]).getBytes()));
+    } catch (Exception ex) {
+        // Log the exception or handle it as per application requirement
+    }
+
+    try {
+        httpResponse.getOutputStream().println("Settings Saved");
+    } catch (Exception ex) {
+        // Log the exception or handle it as per application requirement
+    }
 }
 
-
-  /**
-   * Debug test for saving and reading a customer
-   *
-   * @param firstName String
-   * @param lastName String
-   * @param dateOfBirth String
-   * @param ssn String
-   * @param tin String
-   * @param phoneNumber String
-   * @param httpResponse
-   * @param request
-   * @return String
-   * @throws IOException
-   */
-@RequestMapping(value = "/debug", method = RequestMethod.GET)
-public String debug(@RequestParam String customerId,
-                    @RequestParam int clientId,
-                    @RequestParam String firstName,
-                    @RequestParam String lastName,
-                    @RequestParam String dateOfBirth,
-                    @RequestParam String ssn,
-                    @RequestParam String socialSecurityNum,
-                    @RequestParam String tin,
-                    @RequestParam String phoneNumber,
-                    HttpServletResponse httpResponse,
-                    WebRequest request) throws IOException {
-
-    // empty for now, because we debug
-    Set<Account> accounts1 = new HashSet<Account>();
-    //dateofbirth example -> "1982-01-10"
-    Customer customer1 = new Customer(customerId, clientId, firstName, lastName, DateTime.parse(dateOfBirth).toDate(),
-                                      ssn, socialSecurityNum, tin, phoneNumber, new Address("Debug str",
-                                      "", "Debug city", "CA", "12345"),
-                                      accounts1);
-
-    customerRepository.save(customer1);
-    httpResponse.setStatus(HttpStatus.CREATED.value());
-    httpResponse.setHeader("Location", String.format("%s/customers/%s",
-                           request.getContextPath(), customer1.getId()));
-
-    return customer1.toString().replace("script",""); // QWIETAI-AUTOFIX
-}
 
 
 
@@ -387,6 +366,7 @@ public String debug(@RequestParam String customerId,
 	}
 
 }
+
 
 
 
