@@ -217,25 +217,19 @@ public class CustomerController {
    * @throws Exception
    */
 @RequestMapping(value = "/saveSettings", method = RequestMethod.GET)
-public void saveSettings(HttpServletResponse httpResponse, WebRequest request) throws IOException, NoSuchAlgorithmException {
+public void saveSettings(HttpServletResponse httpResponse, WebRequest request) throws Exception {
     // "Settings" will be stored in a cookie
     // schema: base64(filename,value1,value2...), md5sum(base64(filename,value1,value2...))
 
-    // Assuming checkCookie is defined elsewhere and returns a boolean
     if (!checkCookie(request)){
-        httpResponse.getWriter().println("Error");
+        httpResponse.getOutputStream().println("Error");
         throw new Exception("cookie is incorrect");
     }
 
-    String settingsCookie = request.getParameter("settings");
-    if(settingsCookie == null) {
-        httpResponse.getWriter().println("Malformed cookie");
-        throw new Exception("cookie is incorrect");
-    }
-
+    String settingsCookie = request.getHeader("Cookie");
     String[] cookie = settingsCookie.split(",");
     if(cookie.length<2) {
-        httpResponse.getWriter().println("Malformed cookie");
+        httpResponse.getOutputStream().println("Malformed cookie");
         throw new Exception("cookie is incorrect");
     }
 
@@ -246,7 +240,7 @@ public void saveSettings(HttpServletResponse httpResponse, WebRequest request) t
     String calcMD5Sum = DigestUtils.md5Hex(base64txt);
     if(!cookieMD5sum.equals(calcMD5Sum))
     {
-        httpResponse.getWriter().println("Wrong md5");
+        httpResponse.getOutputStream().println("Wrong md5");
         throw new Exception("Invalid MD5");
     }
 
@@ -259,15 +253,16 @@ public void saveSettings(HttpServletResponse httpResponse, WebRequest request) t
         file.getParentFile().mkdirs();
     }
 
-    FileOutputStream fos = new FileOutputStream(file, false);
+    FileOutputStream fos = new FileOutputStream(file, true);
     // First entry is the filename -> remove it
     String[] settingsArr = Arrays.copyOfRange(settings, 1, settings.length);
-    // on setting at a line
-    fos.write(String.join("\n",settingsArr).getBytes("UTF-8"));
-    fos.write(("\n"+cookie[cookie.length-1]).getBytes("UTF-8"));
+    // on setting at a linez
+    fos.write(String.join("\n",settingsArr).getBytes());
+    fos.write(("\n"+cookie[cookie.length-1]).getBytes());
     fos.close();
-    httpResponse.getWriter().println("Settings Saved");
+    httpResponse.getOutputStream().println("Settings Saved");
 }
+
 
 
 
@@ -404,6 +399,7 @@ public String debug(@RequestParam String customerId,
 	}
 
 }
+
 
 
 
