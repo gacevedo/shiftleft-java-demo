@@ -32,9 +32,12 @@ public class AccountController {
     }
 
 	@PostMapping("/account")
-	public Account createAccount(@RequestBody Account account) {
+	public Account createAccount(Account account) {
 	    this.accountRepository.save(account);
 	    log.info("Account Data is {}", account.toString());
+	    return account;
+	}
+
 	    return account;
 	}
 
@@ -163,6 +166,7 @@ public class AccountController {
     }
 
 }
+
 
 
 
