@@ -79,6 +79,14 @@ public class AccountController {
 
 	@PostMapping("/account/{accountId}/withdraw")
     public Account withdrawFromAccount(@RequestParam double amount, @PathVariable long accountId) {
+        Account account = this.accountRepository.findOne(accountId);
+        account.withdraw(amount);
+        this.accountRepository.save(account);
+        log.info("Account Data is {}", account.toString());
+        return account;
+    }
+
+    public Account withdrawFromAccount(@RequestParam double amount, @PathVariable long accountId) {
         // Check if the user has the necessary permissions to access the account.
         if (!hasPermissionToAccessAccount(accountId)) {
             throw new AccessDeniedException("User does not have permission to access this account.");
@@ -155,6 +163,7 @@ public class AccountController {
     }
 
 }
+
 
 
 
