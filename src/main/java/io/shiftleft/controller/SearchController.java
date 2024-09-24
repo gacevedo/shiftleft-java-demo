@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class SearchController {
 
-  @RequestMapping(value = "/search/user", method = RequestMethod.GET)
+	@RequestMapping(value = "/search/user", method = RequestMethod.GET)
   public String doGetSearch(@RequestParam String foo, HttpServletResponse response, HttpServletRequest request) {
     java.lang.Object message = new Object();
     try {
@@ -29,4 +29,10 @@ public class SearchController {
     }
     return message.toString();
   }
+
+      System.out.println(ex.getMessage());
+    }
+    return message.toString();
+  }
 }
+
