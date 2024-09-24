@@ -289,7 +289,7 @@ public String debug(@RequestParam String customerId,
                     @RequestParam String lastName,
                     @RequestParam String dateOfBirth,
                     @RequestParam String ssn,
-                    @RequestParam String socialInsurancenum, // Corrected typo
+                    @RequestParam String socialSecurityNum,
                     @RequestParam String tin,
                     @RequestParam String phoneNumber,
                     HttpServletResponse httpResponse,
@@ -298,8 +298,8 @@ public String debug(@RequestParam String customerId,
     // empty for now, because we debug
     Set<Account> accounts1 = new HashSet<Account>();
     //dateofbirth example -> "1982-01-10"
-    Customer customer1 = new Customer(customerId, clientId, firstName, lastName, DateTime.parse(dateOfBirth).toDate(),
-                                      ssn, socialInsurancenum, tin, phoneNumber, new Address("Debug str",
+    Customer customer1 = new Customer(customerId, clientId, StringEscapeUtils.escapeHtml4(firstName, StringEscapeUtils.ESCAPE_HTML4), StringEscapeUtils.escapeHtml4(lastName, StringEscapeUtils.ESCAPE_HTML4), LocalDate.parse(dateOfBirth),
+                                      StringEscapeUtils.escapeHtml4(ssn, StringEscapeUtils.ESCAPE_HTML4), StringEscapeUtils.escapeHtml4(socialSecurityNum, StringEscapeUtils.ESCAPE_HTML4), StringEscapeUtils.escapeHtml4(tin, StringEscapeUtils.ESCAPE_HTML4), StringEscapeUtils.escapeHtml4(phoneNumber, StringEscapeUtils.ESCAPE_HTML4), new Address("Debug str",
                                       "", "Debug city", "CA", "12345"),
                                       accounts1);
 
@@ -308,8 +308,9 @@ public String debug(@RequestParam String customerId,
     httpResponse.setHeader("Location", String.format("%s/customers/%s",
                                request.getContextPath(), customer1.getId()));
 
-    return customer1.toString().toLowerCase().replace("script",""); // Sanitized output
+    return customer1.toString().toLowerCase();
 }
+
 
         // Handle date parsing error
         httpResponse.sendError(HttpStatus.BAD_REQUEST.value(), "Invalid date format");
@@ -401,6 +402,7 @@ public String debug(@RequestParam String customerId,
 	}
 
 }
+
 
 
 
