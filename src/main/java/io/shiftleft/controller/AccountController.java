@@ -44,7 +44,23 @@ public class AccountController {
         return this.accountRepository.findOne(accountId);
     }
 
-    @PostMapping("/account/{accountId}/deposit")
+	@PostMapping("/account/{accountId}/deposit")
+    public Account depositIntoAccount(@RequestParam double amount, @PathVariable long accountId) {
+        // Retrieve the currently authenticated user
+        User currentUser = getCurrentUser();
+        
+        // Check if the current user has permission to access the account
+        if (!currentUser.hasPermissionToAccessAccount(accountId)) {
+            throw new AccessDeniedException("User does not have permission to access this account.");
+        }
+        
+        Account account = this.accountRepository.findOne(accountId);
+        log.info("Account Data is {}", account.toString());
+        account.deposit(amount);
+        this.accountRepository.save(account);
+        return account;
+    }
+
     public Account depositIntoAccount(@RequestParam double amount, @PathVariable long accountId) {
         Account account = this.accountRepository.findOne(accountId);
         log.info("Account Data is {}", account.toString());
@@ -72,3 +88,4 @@ public class AccountController {
     }
 
 }
+
