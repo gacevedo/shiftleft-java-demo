@@ -101,14 +101,16 @@ public String doPostLogin(@CookieValue(value = "auth", defaultValue = "notset") 
             return fail;
         }
         // compare pass
-        if(pass[1] != null && pass[1].length()>0 && pass[1].equals("shiftleftsecret"))
+        if(pass[1] != null && pass[1].length()>0 && pass[1].equals(System.getenv("SHIFTLEFT_SECRET")))
         {
             AuthToken authToken = new AuthToken(AuthToken.ADMIN);
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(bos);
             oos.writeObject(authToken);
-            String cookieValue = new String(Base64.getEncoder().encode(bos.toByteArray()));
-            response.addCookie(new Cookie("auth", cookieValue ));
+            oos.flush();
+            oos.close();
+            String cookieValue = Base64.getEncoder().encodeToString(bos.toByteArray());
+            response.addCookie(new Cookie("auth", cookieValue ).setSecure(true));
 
             // cookie is lost after redirection
             request.getSession().setAttribute("auth",cookieValue);
@@ -119,10 +121,14 @@ public String doPostLogin(@CookieValue(value = "auth", defaultValue = "notset") 
     }
     catch (Exception ex)
     {
-        ex.printStackTrace();
         // no succ == fail
         return fail;
     }
+    finally {
+        request.getSession().removeAttribute("auth");
+    }
+}
+
 }
 
   }
@@ -138,4 +144,5 @@ public String doPostLogin(@CookieValue(value = "auth", defaultValue = "notset") 
     return "redirect:/";
   }
 }
+
 
