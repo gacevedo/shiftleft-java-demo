@@ -31,10 +31,13 @@ public class AccountController {
         return this.accountRepository.findAll();
     }
 
-    @PostMapping("/account")
-    public Account createAccount(Account account) {
-        this.accountRepository.save(account);
-        log.info("Account Data is {}", account.toString());
+	@PostMapping("/account")
+	public Account createAccount(@RequestBody Account account) {
+	    this.accountRepository.save(account);
+	    log.info("Account Data is {}", account.toString());
+	    return account;
+	}
+
         return account;
     }
 
@@ -133,6 +136,7 @@ public class AccountController {
     }
 
 }
+
 
 
 
