@@ -18,21 +18,23 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class SearchController {
 
 @RequestMapping(value = "/search/user", method = RequestMethod.GET)
-@PreAuthorize("isAuthenticated()")
 public String doGetSearch(@RequestParam String foo, HttpServletResponse response, HttpServletRequest request) {
-    java.lang.Object message = null;
+    String message = "";
     try {
         ExpressionParser parser = new SpelExpressionParser();
         Expression exp = parser.parseExpression(foo);
-        message = (Object) exp.getValue();
+        message = StringEscapeUtils.escapeHtml4((String) exp.getValue());
     } catch (Exception ex) {
-        Logger logger = LoggerFactory.getLogger(this.getClass());
-        logger.error("An error occurred while processing the search request", ex);
+        System.out.println(ex.getMessage());
     }
+    return message;
+}
+
     return message != null ? message.toString() : "";
 }
 
     return message.toString();
   }
 }
+
 
