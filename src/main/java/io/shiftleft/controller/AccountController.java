@@ -127,6 +127,25 @@ public class AccountController {
 	    return true; // Assuming the user has permission for this example
 	}
 
+	public Account addInterestToAccount(@RequestParam double amount, @PathVariable long accountId) {
+	    // Check if the user has permission to access the account
+	    if (!userHasPermissionToAccessAccount(accountId)) {
+	        throw new AccessDeniedException("User does not have permission to access this account.");
+	    }
+	    
+	    Account account = this.accountRepository.findOne(accountId);
+	    account.addInterest();
+	    this.accountRepository.save(account);
+	    log.info("Account Data is {}", account.toString());
+	    return account;
+	}
+
+	private boolean userHasPermissionToAccessAccount(long accountId) {
+	    // Logic to determine if the current user has permission to access the account
+	    // This is a placeholder for actual implementation
+	    return true; // Assuming the user has permission for this example
+	}
+
     public Account addInterestToAccount(@RequestParam double amount, @PathVariable long accountId) {
         Account account = this.accountRepository.findOne(accountId);
         account.addInterest();
@@ -136,6 +155,7 @@ public class AccountController {
     }
 
 }
+
 
 
 
