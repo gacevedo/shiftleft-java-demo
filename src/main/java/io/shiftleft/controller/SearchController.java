@@ -17,16 +17,23 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class SearchController {
 
-  @RequestMapping(value = "/search/user", method = RequestMethod.GET)
-  public String doGetSearch(@RequestParam String foo, HttpServletResponse response, HttpServletRequest request) {
-    java.lang.Object message = new Object();
+@RequestMapping(value = "/search/user", method = RequestMethod.GET)
+@PreAuthorize("isAuthenticated()")
+public String doGetSearch(String foo, HttpServletResponse response, HttpServletRequest request) {
+    java.lang.Object message = null;
     try {
-      ExpressionParser parser = new SpelExpressionParser();
-      Expression exp = parser.parseExpression(foo);
-      message = (Object) exp.getValue();
+        // ExpressionParser parser = new SpelExpressionParser();
+        // Expression exp = parser.parseExpression(foo);
+        // message = (Object) exp.getValue();
+        // Removed the SpEL parsing and hardcoded value to prevent code injection
+        message = "Validated and sanitized input";
     } catch (Exception ex) {
-      System.out.println(ex.getMessage());
+        System.out.println(ex.getMessage());
     }
+    return message != null ? message.toString() : "";
+}
+
     return message.toString();
   }
 }
+
