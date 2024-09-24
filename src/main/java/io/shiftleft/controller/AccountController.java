@@ -76,7 +76,24 @@ public static String encrypt(String valueToEnc, String secret) {
         return account;
     }
 
-    @PostMapping("/account/{accountId}/withdraw")
+@PostMapping("/account/{accountId}/withdraw")
+public Account withdrawFromAccount(@RequestParam double amount, @PathVariable("accountId") long accountId, HttpServletResponse response) throws IOException {
+    Optional<Account> optionalAccount = this.accountRepository.findById(accountId);
+    if (!optionalAccount.isPresent()) {
+        response.sendError(HttpServletResponse.SC_FORBIDDEN, "Account not found");
+        return null;
+    }
+    Account account = optionalAccount.get();
+    if (account.getBalance() < amount) {
+        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Insufficient balance");
+        return null;
+    }
+    account.withdraw(amount);
+    this.accountRepository.save(account);
+    log.info("Account Data is {}", account.toString());
+    return account;
+}
+
     public Account withdrawFromAccount(@RequestParam double amount, @PathVariable long accountId) {
         Account account = this.accountRepository.findOne(accountId);
         account.withdraw(amount);
@@ -95,5 +112,6 @@ public static String encrypt(String valueToEnc, String secret) {
     }
 
 }
+
 
 
