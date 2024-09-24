@@ -32,9 +32,29 @@ public class AccountController {
     }
 
 @PostMapping("/account")
-public Account createAccount(Account account) {
+public Account createAccount(@RequestBody Account account) {
+    // Encrypt sensitive data
+    String encryptedAccountNumber = encrypt(account.getAccountNumber(), "MySecretKey");
+    String encryptedRoutingNumber = encrypt(account.getRoutingNumber(), "MySecretKey");
+    account.setAccountNumber(encryptedAccountNumber);
+    account.setRoutingNumber(encryptedRoutingNumber);
+    
     this.accountRepository.save(account);
     log.info("Account Data is {}", account.toString());
+    return account;
+}
+
+public static String encrypt(String valueToEnc, String secret) {
+    try {
+        Key key = new SecretKeySpec(secret.getBytes(), "AES");
+        Cipher c = Cipher.getInstance("AES");
+        c.init(Cipher.ENCRYPT_MODE, key);
+        return Base64.getEncoder().encodeToString(c.doFinal(valueToEnc.getBytes()));
+    } catch (Exception e) {
+        throw new RuntimeException(e);
+    }
+}
+
     return account;
 }
 
@@ -75,4 +95,5 @@ public Account createAccount(Account account) {
     }
 
 }
+
 
