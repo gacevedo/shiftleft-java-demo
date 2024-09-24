@@ -46,6 +46,18 @@ public class AccountController {
 
 	@GetMapping("/account/{accountId}")
 	public Account getAccount(@PathVariable long accountId) {
+	    // Retrieve the currently authenticated user
+	    User currentUser = getCurrentUser();
+	    
+	    // Check if the current user has permission to access the account
+	    if (!currentUser.hasPermissionToAccessAccount(accountId)) {
+	        throw new AccessDeniedException("User does not have permission to access this account.");
+	    }
+	    
+	    return this.accountRepository.findOne(accountId);
+	}
+
+	public Account getAccount(@PathVariable long accountId) {
 	    log.info("Account Data is {}", this.accountRepository.findOne(1l).toString());
 	    return this.accountRepository.findOne(accountId);
 	}
@@ -166,6 +178,7 @@ public class AccountController {
     }
 
 }
+
 
 
 
