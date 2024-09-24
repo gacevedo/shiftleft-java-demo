@@ -34,5 +34,11 @@ public class SearchController {
     }
     return message.toString();
   }
+
+      System.out.println(ex.getMessage());
+    }
+    return message.toString();
+  }
 }
+
 
