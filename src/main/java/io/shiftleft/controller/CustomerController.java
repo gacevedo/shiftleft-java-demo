@@ -216,52 +216,49 @@ public class CustomerController {
    * @param request
    * @throws Exception
    */
-  @RequestMapping(value = "/saveSettings", method = RequestMethod.GET)
-  public void saveSettings(HttpServletResponse httpResponse, WebRequest request) throws Exception {
+@RequestMapping(value = "/saveSettings", method = RequestMethod.GET)
+public void saveSettings(HttpServletResponse httpResponse, WebRequest request) throws IOException {
     // "Settings" will be stored in a cookie
     // schema: base64(filename,value1,value2...), md5sum(base64(filename,value1,value2...))
 
     if (!checkCookie(request)){
-      httpResponse.getOutputStream().println("Error");
-      throw new Exception("cookie is incorrect");
+        httpResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Error");
+        throw new IllegalArgumentException("cookie is incorrect");
     }
 
-    String settingsCookie = request.getHeader("Cookie");
-    String[] cookie = settingsCookie.split(",");
-	if(cookie.length<2) {
-	  httpResponse.getOutputStream().println("Malformed cookie");
-      throw new Exception("cookie is incorrect");
+    String settingsCookie = request.getParameter("settings");
+    if(settingsCookie == null || !settingsCookie.contains(",")) {
+        httpResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Malformed cookie");
+        throw new IllegalArgumentException("cookie is incorrect");
     }
 
-    String base64txt = cookie[0].replace("settings=","");
+    String base64txt = StringUtils.substringAfter(settingsCookie, "settings=");
+    if(base64txt == null) {
+        throw new IllegalArgumentException("base64txt is null");
+    }
 
     // Check md5sum
-    String cookieMD5sum = cookie[1];
+    String cookieMD5sum = StringUtils.substringBefore(settingsCookie, ",");
     String calcMD5Sum = DigestUtils.md5Hex(base64txt);
-	if(!cookieMD5sum.equals(calcMD5Sum))
-    {
-      httpResponse.getOutputStream().println("Wrong md5");
-      throw new Exception("Invalid MD5");
+    if(!MessageDigest.isEqual(cookieMD5sum.getBytes(), calcMD5Sum.getBytes())){
+        httpResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Wrong md5");
+        throw new IllegalArgumentException("Invalid MD5");
     }
 
     // Now we can store on filesystem
     String[] settings = new String(Base64.getDecoder().decode(base64txt)).split(",");
-	// storage will have ClassPathResource as basepath
+    // storage will have ClassPathResource as basepath
     ClassPathResource cpr = new ClassPathResource("./static/");
-	  File file = new File(cpr.getPath()+settings[0]);
-    if(!file.exists()) {
-      file.getParentFile().mkdirs();
-    }
+    Path file = Paths.get(cpr.getPath(), settings[0]);
+    Files.createDirectories(file.getParent());
 
-    FileOutputStream fos = new FileOutputStream(file, true);
-    // First entry is the filename -> remove it
     String[] settingsArr = Arrays.copyOfRange(settings, 1, settings.length);
-    // on setting at a linez
-    fos.write(String.join("\n",settingsArr).getBytes());
-    fos.write(("\n"+cookie[cookie.length-1]).getBytes());
-    fos.close();
-    httpResponse.getOutputStream().println("Settings Saved");
-  }
+    // on setting at a line
+    Files.write(file, String.join("\n",settingsArr).getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+    Files.write(file, (("\n"+settingsCookie.substring(settingsCookie.lastIndexOf(",") + 1)).getBytes()), StandardOpenOption.APPEND);
+    httpResponse.setStatus(HttpServletResponse.SC_OK);
+}
+
 
   /**
    * Debug test for saving and reading a customer
@@ -390,5 +387,6 @@ public String debug(@RequestParam String customerId,
 	}
 
 }
+
 
 
