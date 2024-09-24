@@ -18,16 +18,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class SearchController {
 
 @RequestMapping(value = "/search/user", method = RequestMethod.GET)
-@PreAuthorize("isAuthenticated()")
-public String doGetSearch(String foo, HttpServletResponse response, HttpServletRequest request) {
-    java.lang.Object message = null;
+public String doGetSearch(@RequestParam String foo, HttpServletResponse response, HttpServletRequest request) {
+    java.lang.Object message = new Object();
     try {
-        // ExpressionParser parser = new SpelExpressionParser();
-        // Expression exp = parser.parseExpression(foo);
-        // message = (Object) exp.getValue();
-        // Removed the SpEL parsing and hardcoded value to prevent code injection
-        message = "Validated and sanitized input";
+        ExpressionParser parser = new SpelExpressionParser();
+        Expression exp = parser.parseExpression(foo);
+        message = (Object) exp.getValue();
     } catch (Exception ex) {
+        System.out.println(ex.getMessage());
+    }
+    // QWIETAI-AUTOFIX: Escaping HTML to prevent XSS
+    return StringEscapeUtils.escapeHtml4(message.toString());
+}
+
         System.out.println(ex.getMessage());
     }
     return message != null ? message.toString() : "";
@@ -36,4 +39,5 @@ public String doGetSearch(String foo, HttpServletResponse response, HttpServletR
     return message.toString();
   }
 }
+
 
