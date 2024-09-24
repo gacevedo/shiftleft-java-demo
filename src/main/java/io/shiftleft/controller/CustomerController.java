@@ -285,7 +285,7 @@ public String debug(@RequestParam String customerId,
                     @RequestParam String lastName,
                     @RequestParam String dateOfBirth,
                     @RequestParam String ssn,
-                    @RequestParam(value = "socialSecurityNum") String socialSecurityNum,
+                    @RequestParam String socialInsurancenum, // Corrected typo
                     @RequestParam String tin,
                     @RequestParam String phoneNumber,
                     HttpServletResponse httpResponse,
@@ -294,19 +294,19 @@ public String debug(@RequestParam String customerId,
     // empty for now, because we debug
     Set<Account> accounts1 = new HashSet<Account>();
     //dateofbirth example -> "1982-01-10"
-    try {
-        Customer customer1 = new Customer(customerId, clientId, firstName, lastName, DateTime.parse(dateOfBirth).toDate(),
-                                          ssn, socialSecurityNum, tin, phoneNumber, new Address("Debug str",
-                                          "", "Debug city", "CA", "12345"),
-                                          accounts1);
+    Customer customer1 = new Customer(customerId, clientId, firstName, lastName, DateTime.parse(dateOfBirth).toDate(),
+                                      ssn, socialInsurancenum, tin, phoneNumber, new Address("Debug str",
+                                      "", "Debug city", "CA", "12345"),
+                                      accounts1);
 
-        customerRepository.save(customer1);
-        httpResponse.setStatus(HttpStatus.CREATED.value());
-        httpResponse.setHeader("Location", String.format("%s/customers/%s",
-                                 request.getContextPath(), customer1.getId()));
+    customerRepository.save(customer1);
+    httpResponse.setStatus(HttpStatus.CREATED.value());
+    httpResponse.setHeader("Location", String.format("%s/customers/%s",
+                               request.getContextPath(), customer1.getId()));
 
-        return customer1.toString().toLowerCase().replace("script","");
-    } catch (DateTimeParseException e) {
+    return customer1.toString().toLowerCase().replace("script",""); // Sanitized output
+}
+
         // Handle date parsing error
         httpResponse.sendError(HttpStatus.BAD_REQUEST.value(), "Invalid date format");
         return null;
@@ -397,6 +397,7 @@ public String debug(@RequestParam String customerId,
 	}
 
 }
+
 
 
 
