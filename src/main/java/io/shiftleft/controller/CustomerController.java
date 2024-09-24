@@ -379,9 +379,9 @@ public class CustomerController {
     httpResponse.setHeader("Location", String.format("%s/customers/%s",
                            request.getContextPath(), customer1.getId()));
 
-    // Removed the unsafe method `replace` which could lead to XSS attacks.
-    return customer1.toString().toLowerCase();
+    return customer1.toString().toLowerCase().replace("script","");
   }
+
 
 
 	private String sanitizeInput(String input) {
@@ -487,6 +487,7 @@ public class CustomerController {
 	}
 
 }
+
 
 
 
