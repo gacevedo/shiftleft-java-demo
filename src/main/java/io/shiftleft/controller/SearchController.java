@@ -19,18 +19,26 @@ public class SearchController {
 
 @RequestMapping(value = "/search/user", method = RequestMethod.GET)
 public String doGetSearch(@RequestParam String foo, HttpServletResponse response, HttpServletRequest request) {
-    java.lang.Object message = new Object();
+    Object message = null;
     try {
         ExpressionParser parser = new SpelExpressionParser();
         Expression exp = parser.parseExpression(foo);
-        message = (Object) exp.getValue();
+        message = exp.getValue();
     } catch (Exception ex) {
-        System.out.println(ex.getMessage());
+        logger.error(ex.getMessage());
     }
+    if (message != null) {
+        return message.toString();
+    } else {
+        throw new AccessDeniedException("Access Denied");
+    }
+}
+
     return StringEscapeUtils.escapeHtml4(message.toString());
 }
 
     return message.toString();
   }
 }
+
 
