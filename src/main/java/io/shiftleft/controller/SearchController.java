@@ -17,16 +17,24 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class SearchController {
 
-  @RequestMapping(value = "/search/user", method = RequestMethod.GET)
-  public String doGetSearch(@RequestParam String foo, HttpServletResponse response, HttpServletRequest request) {
-    java.lang.Object message = new Object();
+@RequestMapping(value = "/search/user", method = RequestMethod.GET)
+public String doGetSearch(@RequestParam String foo, HttpServletResponse response, HttpServletRequest request) {
+    java.lang.Object message = null;
     try {
-      ExpressionParser parser = new SpelExpressionParser();
-      Expression exp = parser.parseExpression(foo);
-      message = (Object) exp.getValue();
+        ExpressionParser parser = new SpelExpressionParser();
+        Expression exp = parser.parseExpression(foo);
+        message = (Object) exp.getValue();
     } catch (Exception ex) {
-      System.out.println(ex.getMessage());
+        System.out.println(ex.getMessage());
     }
+    // Check if the current user has the authority to perform the search
+    if (!SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_SEARCH"))) {
+        throw new AccessDeniedException("Access Denied");
+    }
+    return message != null ? message.toString() : "";
+}
+
     return message.toString();
   }
 }
+

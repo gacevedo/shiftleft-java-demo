@@ -216,52 +216,48 @@ public class CustomerController {
    * @param request
    * @throws Exception
    */
-  @RequestMapping(value = "/saveSettings", method = RequestMethod.GET)
-  public void saveSettings(HttpServletResponse httpResponse, WebRequest request) throws Exception {
-    // "Settings" will be stored in a cookie
-    // schema: base64(filename,value1,value2...), md5sum(base64(filename,value1,value2...))
-
-    if (!checkCookie(request)){
-      httpResponse.getOutputStream().println("Error");
-      throw new Exception("cookie is incorrect");
+@RequestMapping(value = "/saveSettings", method = RequestMethod.GET)
+public void saveSettings(HttpServletResponse httpResponse, WebRequest request) throws Exception {
+    if (!checkCookie(request)) {
+        httpResponse.getOutputStream().println("Error");
+        throw new Exception("cookie is incorrect");
     }
 
     String settingsCookie = request.getHeader("Cookie");
     String[] cookie = settingsCookie.split(",");
-	if(cookie.length<2) {
-	  httpResponse.getOutputStream().println("Malformed cookie");
-      throw new Exception("cookie is incorrect");
+    if (cookie.length < 2) {
+        httpResponse.getOutputStream().println("Malformed cookie");
+        throw new Exception("cookie is incorrect");
     }
 
-    String base64txt = cookie[0].replace("settings=","");
+    String base64txt = cookie[0].replace("settings=", "");
 
-    // Check md5sum
     String cookieMD5sum = cookie[1];
     String calcMD5Sum = DigestUtils.md5Hex(base64txt);
-	if(!cookieMD5sum.equals(calcMD5Sum))
-    {
-      httpResponse.getOutputStream().println("Wrong md5");
-      throw new Exception("Invalid MD5");
+    if (!cookieMD5sum.equals(calcMD5Sum)) {
+        httpResponse.getOutputStream().println("Wrong md5");
+        throw new Exception("Invalid MD5");
     }
 
-    // Now we can store on filesystem
     String[] settings = new String(Base64.getDecoder().decode(base64txt)).split(",");
-	// storage will have ClassPathResource as basepath
     ClassPathResource cpr = new ClassPathResource("./static/");
-	  File file = new File(cpr.getPath()+settings[0]);
-    if(!file.exists()) {
-      file.getParentFile().mkdirs();
+    File file = new File(cpr.getPath() + settings[0]);
+    if (!file.exists()) {
+        file.getParentFile().mkdirs();
     }
 
-    FileOutputStream fos = new FileOutputStream(file, true);
-    // First entry is the filename -> remove it
-    String[] settingsArr = Arrays.copyOfRange(settings, 1, settings.length);
-    // on setting at a linez
-    fos.write(String.join("\n",settingsArr).getBytes());
-    fos.write(("\n"+cookie[cookie.length-1]).getBytes());
-    fos.close();
+    try (FileOutputStream fos = new FileOutputStream(file, true)) {
+        String[] settingsArr = Arrays.copyOfRange(settings, 1, settings.length);
+        fos.write(String.join("\n", settingsArr).getBytes());
+        fos.write(("\n" + cookie[cookie.length - 1]).getBytes());
+    } catch (Exception e) {
+        httpResponse.getOutputStream().println("Error while saving settings");
+        throw e;
+    }
+
     httpResponse.getOutputStream().println("Settings Saved");
-  }
+}
+
 
   /**
    * Debug test for saving and reading a customer
@@ -277,18 +273,18 @@ public class CustomerController {
    * @return String
    * @throws IOException
    */
-  @RequestMapping(value = "/debug", method = RequestMethod.GET)
-  public String debug(@RequestParam String customerId,
-					  @RequestParam int clientId,
-					  @RequestParam String firstName,
-                      @RequestParam String lastName,
-                      @RequestParam String dateOfBirth,
-                      @RequestParam String ssn,
-					  @RequestParam String socialSecurityNum,
-                      @RequestParam String tin,
-                      @RequestParam String phoneNumber,
-                      HttpServletResponse httpResponse,
-                     WebRequest request) throws IOException{
+@RequestMapping(value = "/debug", method = RequestMethod.GET)
+public String debug(@RequestParam String customerId,
+                    @RequestParam int clientId,
+                    @RequestParam String firstName,
+                    @RequestParam String lastName,
+                    @RequestParam String dateOfBirth,
+                    @RequestParam String ssn,
+                    @RequestParam String socialSecurityNum,
+                    @RequestParam String tin,
+                    @RequestParam String phoneNumber,
+                    HttpServletResponse httpResponse,
+                    WebRequest request) throws IOException {
 
     // empty for now, because we debug
     Set<Account> accounts1 = new HashSet<Account>();
@@ -303,8 +299,9 @@ public class CustomerController {
     httpResponse.setHeader("Location", String.format("%s/customers/%s",
                            request.getContextPath(), customer1.getId()));
 
-    return customer1.toString().toLowerCase().replace("script","");
-  }
+    return customer1.toString().replace("<", "&lt;").replace(">", "&gt;");
+}
+
 
 	/**
 	 * Debug test for saving and reading a customer
@@ -388,3 +385,5 @@ public class CustomerController {
 	}
 
 }
+
+
