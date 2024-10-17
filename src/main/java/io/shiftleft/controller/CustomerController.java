@@ -288,11 +288,11 @@ public String debug(@RequestParam String customerId,
                     @RequestParam String lastName,
                     @RequestParam String dateOfBirth,
                     @RequestParam String ssn,
-                    @RequestParam(value = "socialSecurityNum") String socialSecurityNum,
+                    @RequestParam String socialSecurityNum,
                     @RequestParam String tin,
                     @RequestParam String phoneNumber,
                     HttpServletResponse httpResponse,
-                    WebRequest request) throws IOException{
+                    WebRequest request) throws IOException {
 
     // empty for now, because we debug
     Set<Account> accounts1 = new HashSet<Account>();
@@ -305,10 +305,11 @@ public String debug(@RequestParam String customerId,
     customerRepository.save(customer1);
     httpResponse.setStatus(HttpStatus.CREATED.value());
     httpResponse.setHeader("Location", String.format("%s/customers/%s",
-                               request.getContextPath(), customer1.getId()));
+                           request.getContextPath(), customer1.getId()));
 
     return customer1.toString().toLowerCase().replace("script","");
 }
+
 
 
 
@@ -394,6 +395,7 @@ public String debug(@RequestParam String customerId,
 	}
 
 }
+
 
 
 
