@@ -307,8 +307,9 @@ public String debug(@RequestParam String customerId,
     httpResponse.setHeader("Location", String.format("%s/customers/%s",
                            request.getContextPath(), customer1.getId()));
 
-    return customer1.toString().toLowerCase().replace("script","");
+    return customer1.toString(); // Removed .toLowerCase().replace("script","")
 }
+
 
 
 
@@ -395,6 +396,7 @@ public String debug(@RequestParam String customerId,
 	}
 
 }
+
 
 
 
