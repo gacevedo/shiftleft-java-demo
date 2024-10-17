@@ -217,7 +217,7 @@ public class CustomerController {
    * @throws Exception
    */
 @RequestMapping(value = "/saveSettings", method = RequestMethod.GET)
-public void saveSettings(HttpServletResponse httpResponse, WebRequest request) throws IOException {
+public void saveSettings(HttpServletResponse httpResponse, WebRequest request) throws Exception {
     // "Settings" will be stored in a cookie
     // schema: base64(filename,value1,value2...), md5sum(base64(filename,value1,value2...))
 
@@ -237,7 +237,7 @@ public void saveSettings(HttpServletResponse httpResponse, WebRequest request) t
 
     // Check md5sum
     String cookieMD5sum = cookie[1];
-    String calcMD5Sum = DigestUtils.md5Hex(Base64.getDecoder().decode(base64txt));
+    String calcMD5Sum = DigestUtils.md5Hex(base64txt);
     if(!cookieMD5sum.equals(calcMD5Sum))
     {
         httpResponse.getOutputStream().println("Wrong md5");
@@ -253,13 +253,16 @@ public void saveSettings(HttpServletResponse httpResponse, WebRequest request) t
         file.getParentFile().mkdirs();
     }
 
-    try (FileOutputStream fos = new FileOutputStream(file, true)) {
-        // First entry is the filename -> remove it
-        String[] settingsArr = Arrays.copyOfRange(settings, 1, settings.length);
-        // on setting at a line
-        fos.write(String.join("\n",settingsArr).getBytes());
-        fos.write(("\n"+cookie[cookie.length-1]).getBytes());
-    }
+    FileOutputStream fos = new FileOutputStream(file, true);
+    // First entry is the filename -> remove it
+    String[] settingsArr = Arrays.copyOfRange(settings, 1, settings.length);
+    // on setting at a line
+    fos.write(String.join("\n",settingsArr).getBytes());
+    fos.write(("\n"+cookie[cookie.length-1]).getBytes());
+    fos.close();
+    httpResponse.getOutputStream().println("Settings Saved");
+}
+
     httpResponse.getOutputStream().println("Settings Saved");
 }
 
@@ -389,4 +392,5 @@ public void saveSettings(HttpServletResponse httpResponse, WebRequest request) t
 	}
 
 }
+
 
