@@ -281,23 +281,26 @@ public void saveSettings(HttpServletResponse httpResponse, WebRequest request) t
    * @return String
    * @throws IOException
    */
-  @RequestMapping(value = "/debug", method = RequestMethod.GET)
-  public String debug(@RequestParam String customerId,
-					  @RequestParam int clientId,
-					  @RequestParam String firstName,
-                      @RequestParam String lastName,
-                      @RequestParam String dateOfBirth,
-                      @RequestParam String ssn,
-					  @RequestParam String socialSecurityNum,
-                      @RequestParam String tin,
-                      @RequestParam String phoneNumber,
-                      HttpServletResponse httpResponse,
-                     WebRequest request) throws IOException{
+@RequestMapping(value = "/debug", method = RequestMethod.GET)
+public String debug(@RequestParam String customerId,
+                    @RequestParam int clientId,
+                    @RequestParam String firstName,
+                    @RequestParam String lastName,
+                    @RequestParam String dateOfBirth,
+                    @RequestParam String ssn,
+                    @RequestParam String socialSecurityNum, // Corrected from socialInsurancenum
+                    @RequestParam String tin,
+                    @RequestParam String phoneNumber,
+                    HttpServletResponse httpResponse,
+                    WebRequest request) throws IOException, ParseException {
 
     // empty for now, because we debug
     Set<Account> accounts1 = new HashSet<Account>();
     //dateofbirth example -> "1982-01-10"
-    Customer customer1 = new Customer(customerId, clientId, firstName, lastName, DateTime.parse(dateOfBirth).toDate(),
+    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+    Date dateOfBirthFormatted = formatter.parse(dateOfBirth);
+
+    Customer customer1 = new Customer(customerId, clientId, firstName, lastName, dateOfBirthFormatted,
                                       ssn, socialSecurityNum, tin, phoneNumber, new Address("Debug str",
                                       "", "Debug city", "CA", "12345"),
                                       accounts1);
@@ -307,8 +310,10 @@ public void saveSettings(HttpServletResponse httpResponse, WebRequest request) t
     httpResponse.setHeader("Location", String.format("%s/customers/%s",
                            request.getContextPath(), customer1.getId()));
 
-    return customer1.toString().toLowerCase().replace("script","");
-  }
+    // Use ESAPI to encode the output to prevent XSS
+    return ESAPI.encoder().encodeForHTML(customer1.toString()).toLowerCase();
+}
+
 
 	/**
 	 * Debug test for saving and reading a customer
@@ -392,5 +397,6 @@ public void saveSettings(HttpServletResponse httpResponse, WebRequest request) t
 	}
 
 }
+
 
 
