@@ -45,6 +45,17 @@ public String doGetSearch(@RequestParam String foo, HttpServletResponse response
     return message != null ? message.toString() : "";
 }
 
+            // If the user does not have the 'ROLE_USER' role, throw an exception
+            throw new SecurityException("Access denied");
+        }
+    } catch (Exception ex) {
+        // Log the exception and return a safe message
+        logger.error("An error occurred while processing the request", ex);
+        message = "An error occurred while processing your request. Please try again later.";
+    }
+    return message != null ? message.toString() : "";
+}
+
         logger.severe(ex.getMessage());
     }
     if (message != null) {
@@ -57,5 +68,6 @@ public String doGetSearch(@RequestParam String foo, HttpServletResponse response
     return message.toString();
   }
 }
+
 
 
