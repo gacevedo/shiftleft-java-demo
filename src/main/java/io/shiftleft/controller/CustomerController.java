@@ -288,33 +288,50 @@ public void saveSettings(HttpServletResponse httpResponse, WebRequest request) t
    * @throws IOException
    */
 @RequestMapping(value = "/debug", method = RequestMethod.GET)
-public String debug(@RequestParam String customerId,
-                    @RequestParam int clientId,
-                    @RequestParam String firstName,
-                    @RequestParam String lastName,
-                    @RequestParam String dateOfBirth,
-                    @RequestParam String ssn,
-                    @RequestParam String socialSecurityNum,
-                    @RequestParam String tin,
-                    @RequestParam String phoneNumber,
+public String debug(@RequestParam(required = false) String customerId,
+                    @RequestParam(required = false, defaultValue = "0") int clientId,
+                    @RequestParam(required = false) String firstName,
+                    @RequestParam(required = false) String lastName,
+                    @RequestParam(required = false) String dateOfBirth,
+                    @RequestParam(required = false) String ssn,
+                    @RequestParam(required = false) String socialSecurityNum,
+                    @RequestParam(required = false) String tin,
+                    @RequestParam(required = false) String phoneNumber,
                     HttpServletResponse httpResponse,
-                    WebRequest request) throws IOException {
+                    WebRequest request) throws IOException, ParseException {
 
     // empty for now, because we debug
     Set<Account> accounts1 = new HashSet<Account>();
-    //dateofbirth example -> "1982-01-10"
-    Customer customer1 = new Customer(customerId, clientId, firstName, lastName, DateTime.parse(dateOfBirth).toDate(),
-                                      ssn, socialSecurityNum, tin, phoneNumber, new Address("Debug str",
-                                      "", "Debug city", "CA", "12345"),
-                                      accounts1);
+    Date dateOfBirthParsed = null;
+    try {
+        dateOfBirthParsed = DateTime.parse(dateOfBirth).toDate();
+    } catch (DateTimeParseException e) {
+        // Handle the exception according to your needs
+    }
 
-    customerRepository.save(customer1);
-    httpResponse.setStatus(HttpStatus.CREATED.value());
+    Customer customer1 = null;
+    try {
+        customer1 = new Customer(customerId, clientId, firstName, lastName, dateOfBirthParsed,
+                                 ssn, socialSecurityNum, tin, phoneNumber, new Address("Debug str",
+                                 "", "Debug city", "CA", "12345"),
+                                 accounts1);
+    } catch (Exception e) {
+        // Handle the exception according to your needs
+    }
+
+    try {
+        customerRepository.save(customer1);
+    } catch (DataAccessException e) {
+        // Handle the exception according to your needs
+    }
+
+    httpResponse.setStatus(HttpStatus.OK.value());
     httpResponse.setHeader("Location", String.format("%s/customers/%s",
-                           request.getContextPath(), customer1.getId()));
+                             request.getContextPath(), customer1.getId()));
 
-    return customer1.toString().toLowerCase().replace("script","");
+    return customer1.toString().replace("script", "");
 }
+
 
 
 
@@ -431,6 +448,7 @@ public String debug(@RequestParam String customerId,
 	}
 
 }
+
 
 
 
