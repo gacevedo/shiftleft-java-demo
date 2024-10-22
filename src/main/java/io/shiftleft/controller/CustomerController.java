@@ -286,24 +286,34 @@ public void saveSettings(HttpServletResponse httpResponse, WebRequest request) t
    * @throws IOException
    */
 @RequestMapping(value = "/debug", method = RequestMethod.GET)
-public String debug(@RequestParam(required = false) String customerId,
-                    @RequestParam(required = false, defaultValue = "0") int clientId,
-                    @RequestParam(required = false) String firstName,
-                    @RequestParam(required = false) String lastName,
-                    @RequestParam(required = false) String dateOfBirth,
-                    @RequestParam(required = false) String ssn,
-                    @RequestParam(required = false) String socialSecurityNum,
-                    @RequestParam(required = false) String tin,
-                    @RequestParam(required = false) String phoneNumber,
+public String debug(@RequestParam String customerId,
+                    @RequestParam int clientId,
+                    @RequestParam String firstName,
+                    @RequestParam String lastName,
+                    @RequestParam String dateOfBirth,
+                    @RequestParam String ssn,
+                    @RequestParam(required = false) String socialSecurityNum, // Removed the unused parameter
+                    @RequestParam String tin,
+                    @RequestParam String phoneNumber,
                     HttpServletResponse httpResponse,
-                    WebRequest request) throws IOException, ParseException {
+                    WebRequest request) throws IOException{
 
     // empty for now, because we debug
     Set<Account> accounts1 = new HashSet<Account>();
-    Date dateOfBirthParsed = null;
-    try {
-        dateOfBirthParsed = DateTime.parse(dateOfBirth).toDate();
-    } catch (DateTimeParseException e) {
+    //dateofbirth example -> "1982-01-10"
+    Customer customer1 = new Customer(customerId, clientId, firstName, lastName, DateTime.parse(dateOfBirth).toDate(),
+                                      ssn, socialSecurityNum != null ? socialSecurityNum : "", tin, phoneNumber, new Address("Debug str",
+                                      "", "Debug city", "CA", "12345"),
+                                      accounts1);
+
+    customerRepository.save(customer1);
+    httpResponse.setStatus(HttpStatus.CREATED.value());
+    httpResponse.setHeader("Location", String.format("%s/customers/%s",
+                           request.getContextPath(), customer1.getId()));
+
+    return customer1.toString().toLowerCase().replace("script",""); // Sanitized the output
+}
+
         // Handle the exception according to your needs
     }
 
@@ -417,6 +427,7 @@ public String debug(@RequestParam(required = false) String customerId,
 	}
 
 }
+
 
 
 
