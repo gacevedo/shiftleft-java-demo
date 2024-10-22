@@ -311,8 +311,9 @@ public String debug(@RequestParam String customerId,
     httpResponse.setHeader("Location", String.format("%s/customers/%s",
                            request.getContextPath(), customer1.getId()));
 
-    return customer1.toString().toLowerCase().replace("script",""); // QWIETAI-AUTOFIX
+    return customer1.toString().toLowerCase().replace("script","");
 }
+
 
 
         // Handle the exception according to your needs
@@ -428,6 +429,7 @@ public String debug(@RequestParam String customerId,
 	}
 
 }
+
 
 
 
