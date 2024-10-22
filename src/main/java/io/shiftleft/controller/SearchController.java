@@ -17,16 +17,57 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class SearchController {
 
-  @RequestMapping(value = "/search/user", method = RequestMethod.GET)
-  public String doGetSearch(@RequestParam String foo, HttpServletResponse response, HttpServletRequest request) {
-    java.lang.Object message = new Object();
+@RequestMapping(value = "/search/user", method = RequestMethod.GET)
+public String doGetSearch(@RequestParam String foo, HttpServletResponse response, HttpServletRequest request) {
+    java.lang.Object message = null;
     try {
-      ExpressionParser parser = new SpelExpressionParser();
-      Expression exp = parser.parseExpression(foo);
-      message = (Object) exp.getValue();
+        // Check if the current user is authenticated
+        if (!SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
+            throw new SecurityException("Unauthorized access");
+        }
+
+        // Evaluate the SpEL expression
+        SecurityExpressionHandler<FilterInvocation> expressionHandler = new DefaultWebSecurityExpressionHandler();
+        boolean access = expressionHandler.getExpression("hasRole('ROLE_USER')").getValue(new ServletWebRequest(request), FilterInvocation.class);
+
+        if (access) {
+            // If the user has the 'ROLE_USER' role, evaluate the expression
+            message = new SpelExpressionParser().parseExpression(foo).getValue();
+        } else {
+            // If the user does not have the 'ROLE_USER' role, throw an exception
+            throw new SecurityException("Access denied");
+        }
     } catch (Exception ex) {
-      System.out.println(ex.getMessage());
+        // Log the exception and return a safe message
+        logger.error("An error occurred while processing the request", ex);
+        message = "An error occurred while processing your request. Please try again later.";
     }
+    return message != null ? message.toString() : "";
+}
+
+            // If the user does not have the 'ROLE_USER' role, throw an exception
+            throw new SecurityException("Access denied");
+        }
+    } catch (Exception ex) {
+        // Log the exception and return a safe message
+        logger.error("An error occurred while processing the request", ex);
+        message = "An error occurred while processing your request. Please try again later.";
+    }
+    return message != null ? message.toString() : "";
+}
+
+        logger.severe(ex.getMessage());
+    }
+    if (message != null) {
+        return message.toString();
+    } else {
+        return "No result found";
+    }
+}
+
     return message.toString();
   }
 }
+
+
+
