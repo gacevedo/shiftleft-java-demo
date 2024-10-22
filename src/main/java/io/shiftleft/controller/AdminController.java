@@ -125,6 +125,8 @@ public String doPostLogin(@CookieValue(value = "auth", defaultValue = "notset") 
     }
 }
 
+}
+
   }
 
   /**
@@ -138,4 +140,5 @@ public String doPostLogin(@CookieValue(value = "auth", defaultValue = "notset") 
     return "redirect:/";
   }
 }
+
 
