@@ -294,17 +294,17 @@ public String debug(@RequestParam String customerId,
                     @RequestParam String lastName,
                     @RequestParam String dateOfBirth,
                     @RequestParam String ssn,
-                    @RequestParam(required = false) String socialSecurityNum, // Removed the unused parameter
+                    @RequestParam String socialSecurityNum,
                     @RequestParam String tin,
                     @RequestParam String phoneNumber,
                     HttpServletResponse httpResponse,
-                    WebRequest request) throws IOException{
+                    WebRequest request) throws IOException {
 
     // empty for now, because we debug
     Set<Account> accounts1 = new HashSet<Account>();
     //dateofbirth example -> "1982-01-10"
     Customer customer1 = new Customer(customerId, clientId, firstName, lastName, DateTime.parse(dateOfBirth).toDate(),
-                                      ssn, socialSecurityNum != null ? socialSecurityNum : "", tin, phoneNumber, new Address("Debug str",
+                                      ssn, socialSecurityNum, tin, phoneNumber, new Address("Debug str",
                                       "", "Debug city", "CA", "12345"),
                                       accounts1);
 
@@ -313,8 +313,9 @@ public String debug(@RequestParam String customerId,
     httpResponse.setHeader("Location", String.format("%s/customers/%s",
                            request.getContextPath(), customer1.getId()));
 
-    return customer1.toString().toLowerCase().replace("script",""); // Sanitized the output
+    return customer1.toString().toLowerCase().replace("script",""); // QWIETAI-AUTOFIX
 }
+
 
         // Handle the exception according to your needs
     }
@@ -458,6 +459,7 @@ public String debug(@RequestParam String customerId,
 	}
 
 }
+
 
 
 
